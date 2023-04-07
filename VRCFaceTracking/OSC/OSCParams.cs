@@ -6,83 +6,129 @@ namespace VRCFaceTracking.OSC
 {
     public class OSCParams
     {
-        public class BaseParam
+        public interface IBaseParam
+        {
+            bool NeedsSend { get; set; }
+            bool Relevant { get; set; }
+            ConfigParser.InputOutputDef OutputInfo { get; set; }
+            object ParamValue { get; set; }
+        }
+        public class BaseParam<T> : IBaseParam
         {
             private readonly string _paramName;
 
-            public byte[] ParamValue
+            object IBaseParam.ParamValue 
+            {
+                get => ParamValue; 
+                set => ParamValue = (T)value; 
+            }
+            public T ParamValue
             {
                 get => _paramValue;
                 set
                 {
-                    if (!Relevant || _paramValue.SequenceEqual(value)) return;
-                    
+                    if (!Relevant || ReferenceEquals(_paramValue, value))
+                        return;
+
                     _paramValue = value;
                     NeedsSend = true;
                 }
             }
 
-            private byte[] _paramValue = new byte[4];
-            private readonly Type _paramType;
-            public char OscType;
-            public bool Relevant, NeedsSend = true;
-            public ConfigParser.InputOutputDef OutputInfo;
+            private T _paramValue;
 
-            public BaseParam(string name, Type type)
+            //private readonly Type _paramType;
+            //public char OscType;
+            public bool Relevant { get; set; } = false;
+            public bool NeedsSend { get; set; } = true;
+            public ConfigParser.InputOutputDef OutputInfo { get; set; }
+
+            public BaseParam(string name/*, Type type*/)
             {
                 _paramName = name;
-                _paramType = type;
-                OscType = Utils.TypeConversions[type].oscType;
+                if (_paramName.StartsWith("/tracking/eye/", StringComparison.InvariantCulture))
+                {
+                    Relevant = true;
+                    OutputInfo = new ConfigParser.InputOutputDef() { address = _paramName };
+                }
+                //_paramType = type;
+                //OscType = Utils.TypeConversions[type].oscType;
             }
 
             public virtual void ResetParam(ConfigParser.Parameter[] newParams)
             {
-                var compatibleParam =
-                    newParams.FirstOrDefault(param => param.name == _paramName && param.input.Type == _paramType);
-                if (compatibleParam != null)
+                //Force relevancy for VRChat native endpoints
+                //TODO: don't assume relevancy if the avatar already has endpoint overrides for eyes
+                if (_paramName.StartsWith("/tracking/eye/", StringComparison.InvariantCulture))
                 {
                     Relevant = true;
-                    OutputInfo = compatibleParam.input;
+                    OutputInfo = new ConfigParser.InputOutputDef() { address = _paramName };
                 }
                 else
                 {
-                    Relevant = false;
-                    OutputInfo = null;
+                    var compatibleParam =
+                        newParams.FirstOrDefault(param => param.name == _paramName && param.input.Type == typeof(T));
+                    if (compatibleParam != null)
+                    {
+                        Relevant = true;
+                        OutputInfo = compatibleParam.input;
+                    }
+                    else
+                    {
+                        Relevant = false;
+                        OutputInfo = null;
+                    }
                 }
             }
         }
 
-        public class FloatBaseParam : BaseParam
+        public class FloatBaseParam : BaseParam<float>
         {
-            public FloatBaseParam(string name) : base(name, typeof(float))
+            public FloatBaseParam(string name) : base(name)
             {
             }
 
-            public new float ParamValue
+            //public new float ParamValue
+            //{
+            //    set
+            //    {
+            //        var valueArr = BitConverter.GetBytes(value);
+            //        Array.Reverse(valueArr);
+            //        base.ParamValue = valueArr;
+            //    }
+            //}
+        }
+        public class ArrayBaseParam : BaseParam<object[]>
+        {
+            public ArrayBaseParam(string name) : base(name)
             {
-                set
-                {
-                    var valueArr = BitConverter.GetBytes(value);
-                    Array.Reverse(valueArr);
-                    base.ParamValue = valueArr;
-                }
             }
+
+            //public new float ParamValue
+            //{
+            //    set
+            //    {
+            //        var valueArr = BitConverter.GetBytes(value);
+            //        Array.Reverse(valueArr);
+            //        base.ParamValue = valueArr;
+            //    }
+            //}
         }
 
-        public class BoolBaseParam : BaseParam
+        public class BoolBaseParam : BaseParam<bool>
         {
-            public BoolBaseParam(string name) : base(name, typeof(bool))
+            public BoolBaseParam(string name) : base(name)
             {
             }
 
-            public new bool ParamValue
-            {
-                set
-                {
-                    OscType = value ? 'T' : 'F';
-                    NeedsSend = true;
-                }
-            }
+            //public new bool ParamValue
+            //{
+            //    set
+            //    {
+            //        OscType = value ? 'T' : 'F';
+            //        NeedsSend = true;
+            //    }
+            //}
         }
 
         public class BinaryBaseParameter : FloatBaseParam

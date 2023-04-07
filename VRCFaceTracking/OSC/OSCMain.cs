@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rug.Osc;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -28,14 +29,18 @@ namespace VRCFaceTracking.OSC
 
     public class OscMain
     {
-        private static readonly Socket SenderClient = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        private OscSender OscSenderClient;
+        //private static readonly Socket SenderClient = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         private static readonly Socket ReceiverClient = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         private static Thread receiveThread;
         
         public OscMain(string address, int outPort, int inPort)
         {
-            SenderClient.Connect(new IPEndPoint(IPAddress.Parse(address), outPort));
-            ReceiverClient.Bind(new IPEndPoint(IPAddress.Parse(address), inPort));
+            var addr = IPAddress.Parse(address);
+            OscSenderClient = new OscSender(addr, 0, outPort);
+            OscSenderClient.Connect();
+            //SenderClient.Connect(new IPEndPoint(addr, outPort));
+            ReceiverClient.Bind(new IPEndPoint(addr, inPort));
             ReceiverClient.ReceiveTimeout = 1000;
 
             receiveThread = new Thread(() =>
@@ -52,7 +57,7 @@ namespace VRCFaceTracking.OSC
             {
                 byte[] buffer = new byte[2048];
                 ReceiverClient.Receive(buffer, buffer.Length, SocketFlags.None);
-                var newMsg = new OscMessage(buffer);
+                var newMsg = new OscMessageVRCFT(buffer);
                 if (newMsg.Address == "/avatar/change")
                     ConfigParser.ParseNewAvatar((string) newMsg.Value);
             }
@@ -62,6 +67,9 @@ namespace VRCFaceTracking.OSC
             }
         }
 
-        public void Send(byte[] data) => SenderClient.Send(data, data.Length, SocketFlags.None);
+        //public void Send(byte[] data)
+        //    => SenderClient.Send(data, data.Length, SocketFlags.None);
+        public void Send(OscMessage message)
+            => OscSenderClient.Send(message);
     }
 }

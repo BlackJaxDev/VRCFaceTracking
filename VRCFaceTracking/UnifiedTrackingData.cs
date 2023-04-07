@@ -88,6 +88,25 @@ namespace VRCFaceTracking
             _maxDilation = 0;
             _minDilation = 999;
         }
+
+        public object[] LeftRightPitchYaw()
+        {
+            //(In degrees) left pitch, left yaw, right pitch, right yaw. Example data: -14.903, 23.592, -15.560, 16.503
+            return new object[]
+            {
+                Lerp((Left.Look.y + 1.0f) * 0.5f, MinPitch, MaxPitch),
+                Lerp((Left.Look.x + 1.0f) * 0.5f, YawOuter, YawInner), //-1 is left (outer), 1 is right (inner)
+                Lerp((Right.Look.y + 1.0f) * 0.5f, MinPitch, MaxPitch),
+                Lerp((Right.Look.x + 1.0f) * 0.5f, -YawInner, -YawOuter), //-1 is left (outer), 1 is right (inner), SO swap and negate so -1 is inner right and 1 is outer left
+            };
+        }
+
+        private float Lerp(float t, float min, float max)
+            => min + (max - min) * t;
+        public float MinPitch { get; set; } = 60.0f;
+        public float MaxPitch { get; set; } = -60.0f;
+        public float YawOuter { get; set; } = -100.0f;
+        public float YawInner { get; set; } = 100.0f;
     }
 
     public class LipTrackingData

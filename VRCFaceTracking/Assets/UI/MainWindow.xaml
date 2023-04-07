@@ -78,7 +78,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
     </Window.Resources>
 
     <Grid Margin="0,0,-0.4,0">
@@ -86,7 +86,8 @@
             <TabItem Header="Main" Foreground="White">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="279*"/>
+                        <ColumnDefinition Width="350*"/>
+                        <ColumnDefinition Width="200*"/>
                         <ColumnDefinition Width="515*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -97,9 +98,37 @@
                     <Image x:Name="VRCFTLogoBottom" HorizontalAlignment="Left" Height="120" Margin="20,72,0,0" VerticalAlignment="Top" Width="120" Source="../Images/LogoIndicators/Uninitialized/Bottom.png"/>
                     <TextBlock x:Name="WTVRCFT" HorizontalAlignment="Left" Margin="145,20,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="115" Width="185" Foreground="#FFE8E8E8" FontWeight="Bold" FontSize="20" Grid.ColumnSpan="2"><Run Text="Welcome to"/><LineBreak/><Run Text="VRCFaceTracking!"/></TextBlock>
                     <ListBox x:Name="AvatarInfo" Background="#00000000" Height="254" Margin="20,20,18,0" VerticalAlignment="Top" SelectionChanged="AvatarInfoUpdate" Grid.RowSpan="2" Grid.Column="1"/>
-                    <Button x:Name="PauseEyesButton" Content="Toggle Eye Tracking" HorizontalAlignment="Left" Height="36" Margin="20,144,0,0" VerticalAlignment="Top" Width="140" Click="PauseClickEyes" BorderThickness="1,1,1,1" />                   
+                    <Button x:Name="PauseEyesButton" Content="Toggle Eye Tracking" HorizontalAlignment="Left" Height="36" Margin="20,144,0,0" VerticalAlignment="Top" Width="140" Click="PauseClickEyes" BorderThickness="1,1,1,1" />
                     <Button x:Name="PauseMouthButton" Content="Toggle Lip Tracking" HorizontalAlignment="Left" Height="36" Margin="20,185,0,0" VerticalAlignment="Top" Width="140" Click="PauseClickMouth" Grid.RowSpan="2"/>
                     <Button x:Name="ReinitializeButton" Content="Reinitialize" HorizontalAlignment="Left" Margin="20,227,0,261" Width="140" Click="ReinitializeClick" Grid.RowSpan="2"/>
+                    <Grid Grid.Row="0" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <Label Content="Minimum Eye Pitch" Grid.Row="0" Grid.Column="0"/>
+                        <Label Content="Maximum Eye Pitch" Grid.Row="2" Grid.Column="0"/>
+                        <Label Content="Inner Eye Yaw" Grid.Row="4" Grid.Column="0"/>
+                        <Label Content="Outer Eye Yaw" Grid.Row="6" Grid.Column="0"/>
+                        
+                        <TextBox x:Name="MinEyePitchText" Text="{Binding MinEyePitch}" HorizontalAlignment="Left" Width="177" Grid.Row="1"/>
+                        <TextBox x:Name="MaxEyePitchText" Text="{Binding MaxEyePitch}" HorizontalAlignment="Left" Width="177" Grid.Row="3"/>
+                        <TextBox x:Name="InnerEyeYawText" Text="{Binding InnerEyeYaw}" HorizontalAlignment="Left" Width="177" Grid.Row="5"/>
+                        <TextBox x:Name="OuterEyeYawText" Text="{Binding OuterEyeYaw}" HorizontalAlignment="Left" Width="177" Grid.Row="7"/>
+                    </Grid>
                     <ScrollViewer x:Name="Scroller" Margin="20,49,20,0" HorizontalScrollBarVisibility="Auto" Grid.Row="1" Grid.ColumnSpan="2" Height="240" VerticalAlignment="Top">
                         <StackPanel Width="945" Visibility="Visible">
                             <ItemsControl ItemsSource="{Binding Source={x:Static local:Logger.ConsoleOutput}}" Width="940">

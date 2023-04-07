@@ -8,7 +8,7 @@ namespace VRCFaceTracking.OSC
     {
         public readonly byte[] Data;
 
-        public OscBundle(IEnumerable<OscMessage> messages)
+        public OscBundle(IEnumerable<OscMessageVRCFT> messages)
         {
             int size = messages.Sum(param => param.Data.Length + 4);
             Data = new byte[16+size]; // Include #bundle header and null terminator

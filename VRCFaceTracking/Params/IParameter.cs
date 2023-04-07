@@ -6,6 +6,6 @@ namespace VRCFaceTracking.Params
     {
         void ResetParam(ConfigParser.Parameter[] newParams);
         
-        OSCParams.BaseParam[] GetBase();
+        OSCParams.IBaseParam[] GetBase();
     }
 }

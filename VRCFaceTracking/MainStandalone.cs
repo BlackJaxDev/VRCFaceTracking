@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rug.Osc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -28,15 +29,20 @@ namespace VRCFaceTracking
     public static class MainStandalone
     {
         public static OscMain OscMain;
-        
-        private static List<OscMessage> ConstructMessages(IEnumerable<OSCParams.BaseParam> parameters) => 
-            parameters.Where(p => p.NeedsSend).Select(param =>
+
+        private static List<OscMessage> ConstructMessages(IEnumerable<OSCParams.IBaseParam> parameters)
+        {
+            return parameters.Where(p => p.NeedsSend).Select(param =>
             {
                 param.NeedsSend = false;
-                return new OscMessage(param.OutputInfo.address, param.OscType, param.ParamValue);
+                if (param.ParamValue is object[] array)
+                    return new OscMessage(param.OutputInfo.address, array);
+                else
+                    return new OscMessage(param.OutputInfo.address, param.ParamValue);
             }).ToList();
+        }
 
-        private static IEnumerable<OSCParams.BaseParam> _relevantParams;
+        private static IEnumerable<OSCParams.IBaseParam> _relevantParams;
         private static int _relevantParamsCount = 416;
 
         private static string _ip = "127.0.0.1";
@@ -107,20 +113,24 @@ namespace VRCFaceTracking
                     UnifiedTrackingData.LatestLipData);
 
                 var messages = ConstructMessages(_relevantParams);
-                while (messages.Count > 0)
-                {
-                    var msgCount = 16;
-                    var msgList = new List<OscMessage>();
-                    while (messages.Count > 0 && msgCount+messages[0].Data.Length+4 < 4096)
-                    {
-                        msgList.Add(messages[0]);
-                        msgCount += messages[0].Data.Length+4;
-                        messages.RemoveAt(0);
-                    }
-                    var bundle = new OscBundle(msgList);
-                    OscMain.Send(bundle.Data);
-                }
-                
+                foreach (var item in messages)
+                    OscMain.Send(item);
+
+                //while (messages.Count > 0)
+                //{
+                //    var msgCount = 16;
+                //    var msgList = new List<OscMessage>();
+                //    while (messages.Count > 0 && msgCount+messages[0].Data.Length+4 < 4096)
+                //    {
+                //        msgList.Add(messages[0]);
+                //        msgCount += messages[0].Data.Length+4;
+                //        messages.RemoveAt(0);
+                //    }
+                //    //var bundle = new OscBundle(msgList);
+                //    foreach (var item in msgList)
+                //        OscMain.Send(item);
+                //}
+
             }
         }
     }

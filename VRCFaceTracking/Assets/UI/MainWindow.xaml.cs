@@ -20,6 +20,55 @@ namespace VRCFaceTracking.Assets.UI
             Visible = true,
         };
 
+        public static readonly DependencyProperty MinEyePitchProperty =
+            DependencyProperty.Register("MinEyePitch", typeof(string), typeof(MainWindow), new PropertyMetadata("60", MinEyePitchChanged));
+        private static void MinEyePitchChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (float.TryParse(e.NewValue.ToString(), out float result))
+                UnifiedTrackingData.LatestEyeData.MinPitch = result;
+        }
+        public static readonly DependencyProperty MaxEyePitchProperty =
+            DependencyProperty.Register("MaxEyePitch", typeof(string), typeof(MainWindow), new PropertyMetadata("-60", MaxEyePitchChanged));
+        private static void MaxEyePitchChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (float.TryParse(e.NewValue.ToString(), out float result))
+                UnifiedTrackingData.LatestEyeData.MaxPitch = result;
+        }
+        public static readonly DependencyProperty InnerEyeYawProperty =
+            DependencyProperty.Register("InnerEyeYaw", typeof(string), typeof(MainWindow), new PropertyMetadata("90", InnerEyeYawChanged));
+        private static void InnerEyeYawChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (float.TryParse(e.NewValue.ToString(), out float result))
+                UnifiedTrackingData.LatestEyeData.YawInner = result;
+        }
+        public static readonly DependencyProperty OuterEyeYawProperty =
+            DependencyProperty.Register("OuterEyeYaw", typeof(string), typeof(MainWindow), new PropertyMetadata("-20", OuterEyeYawChanged));
+        private static void OuterEyeYawChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (float.TryParse(e.NewValue.ToString(), out float result))
+                UnifiedTrackingData.LatestEyeData.YawOuter = result;
+        }
+        public string MinEyePitch
+        {
+            get { return (string)GetValue(MinEyePitchProperty); }
+            set { SetValue(MinEyePitchProperty, value); }
+        }
+        public string MaxEyePitch
+        {
+            get { return (string)GetValue(MaxEyePitchProperty); }
+            set { SetValue(MaxEyePitchProperty, value); }
+        }
+        public string InnerEyeYaw
+        {
+            get { return (string)GetValue(InnerEyeYawProperty); }
+            set { SetValue(InnerEyeYawProperty, value); }
+        }
+        public string OuterEyeYaw
+        {
+            get { return (string)GetValue(OuterEyeYawProperty); }
+            set { SetValue(OuterEyeYawProperty, value); }
+        }
+
         private void ShowWindow(object sender, EventArgs args)
         { 
             Show();
@@ -63,7 +112,12 @@ namespace VRCFaceTracking.Assets.UI
 
             UnifiedLibManager.OnTrackingStateUpdate += (eye, lip) =>
                 Dispatcher.BeginInvoke(new ThreadStart(() => UpdateLogo(eye, lip)));
-            
+
+            OuterEyeYaw = UnifiedTrackingData.LatestEyeData.YawOuter.ToString();
+            InnerEyeYaw = UnifiedTrackingData.LatestEyeData.YawInner.ToString();
+            MinEyePitch = UnifiedTrackingData.LatestEyeData.MinPitch.ToString();
+            MaxEyePitch = UnifiedTrackingData.LatestEyeData.MaxPitch.ToString();
+
             // Start a new thread to update the lip image
             new Thread(() =>
             {

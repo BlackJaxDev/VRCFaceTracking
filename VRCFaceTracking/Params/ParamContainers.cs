@@ -6,6 +6,21 @@ using VRCFaceTracking.OSC;
 
 namespace VRCFaceTracking.Params
 {
+    public class ArrayParameter : OSCParams.ArrayBaseParam, IParameter
+    {
+        public ArrayParameter(Func<EyeTrackingData, object[]> getValueFunc,
+               string paramName)
+               : base(paramName) =>
+               UnifiedTrackingData.OnUnifiedDataUpdated += (eye, lip) =>
+               {
+                   //if (!UnifiedLibManager.EyeEnabled && !UnifiedLibManager.LipEnabled) return;
+                   var value = getValueFunc.Invoke(eye);
+                   if (value != null)
+                       ParamValue = value;
+               };
+
+        public OSCParams.IBaseParam[] GetBase() => new OSCParams.IBaseParam[] { this };
+    }
     public class FloatParameter : OSCParams.FloatBaseParam, IParameter
     {
         public FloatParameter(Func<EyeTrackingData, LipTrackingData, float?> getValueFunc,
@@ -19,7 +34,7 @@ namespace VRCFaceTracking.Params
                     ParamValue = value.Value;
             };
 
-        public OSCParams.BaseParam[] GetBase() => new OSCParams.BaseParam[] {this};
+        public OSCParams.IBaseParam[] GetBase() => new OSCParams.IBaseParam[] {this};
     }
 
     public class XYParameter : XYParam, IParameter
@@ -40,7 +55,7 @@ namespace VRCFaceTracking.Params
 
         public void ResetParam(ConfigParser.Parameter[] newParams) => ResetParams(newParams);
 
-        public OSCParams.BaseParam[] GetBase() => new OSCParams.BaseParam[] {X, Y};
+        public OSCParams.IBaseParam[] GetBase() => new OSCParams.IBaseParam[] {X, Y};
     }
 
     public class BoolParameter : OSCParams.BoolBaseParam, IParameter
@@ -59,9 +74,9 @@ namespace VRCFaceTracking.Params
         {
         }
 
-        public OSCParams.BaseParam[] GetBase()
+        public OSCParams.IBaseParam[] GetBase()
         {
-            return new OSCParams.BaseParam[] {this};
+            return new OSCParams.IBaseParam[] {this};
         }
     }
 
@@ -82,9 +97,9 @@ namespace VRCFaceTracking.Params
         {
         }
 
-        public OSCParams.BaseParam[] GetBase()
+        public OSCParams.IBaseParam[] GetBase()
         {
-            OSCParams.BaseParam[] retParams = new OSCParams.BaseParam[_params.Count + 1];
+            OSCParams.IBaseParam[] retParams = new OSCParams.IBaseParam[_params.Count + 1];
             // Merge _params.Values and _negativeParam
             Array.Copy(_params.Values.ToArray(), retParams, _params.Count);
             retParams[_params.Count] = _negativeParam;
@@ -99,6 +114,15 @@ namespace VRCFaceTracking.Params
         private readonly IParameter[] _parameter;
         private readonly string Name;
 
+        public EParam(Func<EyeTrackingData, object[]> getValueFunc, string paramName)
+        {
+            Name = paramName;
+            _parameter = new IParameter[]
+            {
+                new ArrayParameter(getValueFunc, paramName)
+            };
+        }
+
         public EParam(Func<EyeTrackingData, LipTrackingData, float?> getValueFunc, string paramName, float minBoolThreshold = 0.5f, bool skipBinaryParamCreation = false)
         {
             var paramLiterals = new List<IParameter>
@@ -108,7 +132,7 @@ namespace VRCFaceTracking.Params
             };
             
             if (!skipBinaryParamCreation)
-             paramLiterals.Add(new BinaryParameter(getValueFunc, paramName));
+                paramLiterals.Add(new BinaryParameter(getValueFunc, paramName));
 
             Name = paramName;
             _parameter = paramLiterals.ToArray();
@@ -119,7 +143,7 @@ namespace VRCFaceTracking.Params
         {
         }
 
-        OSCParams.BaseParam[] IParameter.GetBase() => 
+        OSCParams.IBaseParam[] IParameter.GetBase() => 
             _parameter.SelectMany(p => p.GetBase()).ToArray();
 
         public void ResetParam(ConfigParser.Parameter[] newParams)

@@ -6,6 +6,9 @@ namespace VRCFaceTracking.Params.Eye
     {
         public static readonly List<IParameter> ParameterList = new List<IParameter>
         {
+            new EParam(exp => exp.LeftRightPitchYaw(), "/tracking/eye/LeftRightPitchYaw"),
+            new EParam(exp => 1.0f - ((exp.Left.Openness + exp.Right.Openness) / 2.0f), "/tracking/eye/EyesClosedAmount"),
+
             #region XYParams
             
             new XYParameter(v2 => v2.Combined.Look, "EyesX", "EyesY"),

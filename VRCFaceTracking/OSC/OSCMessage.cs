@@ -5,13 +5,13 @@ using System.Text;
 
 namespace VRCFaceTracking.OSC
 {
-    public class OscMessage
+    public class OscMessageVRCFT
     {
         public readonly byte[] Data;
         public readonly string Address;
         public readonly object Value;
 
-        private OscMessage(string name, char typeIdentifier)
+        private OscMessageVRCFT(string name, char typeIdentifier)
         {
             Address = name;
             
@@ -26,7 +26,7 @@ namespace VRCFaceTracking.OSC
             Array.Copy(valueIdentBytes, 0, Data, nameBytes.Length, valueIdentBytes.Length);
         }
 
-        public OscMessage(string name, int value) : this(name, 'i')
+        public OscMessageVRCFT(string name, int value) : this(name, 'i')
         {
             var valueArr = BitConverter.GetBytes(value);
             Array.Reverse(valueArr);
@@ -37,7 +37,7 @@ namespace VRCFaceTracking.OSC
             Data = newFullArr;
         }
         
-        public OscMessage(string name, double value) : this(name, 'f')
+        public OscMessageVRCFT(string name, double value) : this(name, 'f')
         {
             var valueArr = BitConverter.GetBytes((float)value);
             Array.Reverse(valueArr);
@@ -48,9 +48,9 @@ namespace VRCFaceTracking.OSC
             Data = newFullArr;
         }
         
-        public OscMessage(string name, bool value) : this(name, value ? 'T' : 'F') {}
+        public OscMessageVRCFT(string name, bool value) : this(name, value ? 'T' : 'F') {}
 
-        public OscMessage(string name, char type, byte[] valueBytes) : this(name, type)
+        public OscMessageVRCFT(string name, char type, byte[] valueBytes) : this(name, type)
         {
             if (valueBytes == null) return;
             var newFullArr = new byte[Data.Length+valueBytes.Length];
@@ -59,7 +59,7 @@ namespace VRCFaceTracking.OSC
             Data = newFullArr;
         }
 
-        public OscMessage(byte[] bytes)
+        public OscMessageVRCFT(byte[] bytes)
         {
             int iter = 0;
 
